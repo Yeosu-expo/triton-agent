@@ -39,7 +39,7 @@ func SetModel(provider string, model string, version string, filename string, ch
 	}
 
 	// Create and write to a file.
-	file, err := os.Create(filePath + fileName)
+	file, err := os.Create(filePath + "/" + fileName)
 	if err != nil {
 		return err
 	}
