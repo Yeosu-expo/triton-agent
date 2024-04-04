@@ -3,8 +3,6 @@ package healthPinger
 import (
 	"log"
 	"net"
-	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/ahr-i/triton-agent/setting"
@@ -25,13 +23,16 @@ func Enter() {
 	model_info = make(map[string]map[string]TaskInfo)
 
 	port = setting.ServerPort
-	cmd := exec.Command("nvidia-smi", "--query-gpu=name", "--format=csv,noheader")
-	output, err := cmd.Output()
-	if err != nil {
-		log.Fatal("failed to get GPU name: ", err)
-	}
+	/*
+		cmd := exec.Command("nvidia-smi", "--query-gpu=name", "--format=csv,noheader")
+		output, err := cmd.Output()
+		if err != nil {
+			log.Fatal("failed to get GPU name: ", err)
+		}
 
-	gpuName = strings.TrimSpace(string(output))
+		gpuName = strings.TrimSpace(string(output))
+	*/
+	gpuName = "2080"
 	log.Println("GPU NAME :", gpuName)
 
 	alivePoster()

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ahr-i/triton-agent/schedulerCommunicator/healthPinger"
 	"github.com/ahr-i/triton-agent/setting"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
 	"github.com/ahr-i/triton-agent/tritonController"
@@ -15,12 +16,11 @@ type servingInformation struct {
 	Provider  string `json:"id"`
 	ModelName string `json:"model_name"`
 	Version   string `json:"version"`
-	FileName  string `json:"filename"`
 	Address   string `json:"addr"`
 }
 
 /* Downloading the model upon request. */
-func (h *Handler) servingHandler(w http.ResponseWriter, r *http.Request, channel *chan string) {
+func (h *Handler) servingHandler(w http.ResponseWriter, r *http.Request) {
 	// Reading the request body.
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -41,17 +41,13 @@ func (h *Handler) servingHandler(w http.ResponseWriter, r *http.Request, channel
 	log.Println("Provider:", response.Provider)
 	log.Println("ModelName:", response.ModelName)
 	log.Println("Version:", response.Version)
-	log.Println("File name:", response.FileName)
 	log.Println("ModelStore Address:", response.Address)
 
 	setting.ModelStoreUrl = response.Address
 
-	// Initiating model download and folder setup according to the request.
-	if err := tritonController.SetModel(response.Provider, response.ModelName, response.Version, response.FileName, channel); err != nil {
-		logCtrlr.Error(err)
-		rend.JSON(w, http.StatusBadRequest, nil)
-		return
-	}
+	tritonController.SetModel(body)
+
+	healthPinger.UpdateModel(response.Provider, response.ModelName, response.Version)
 
 	rend.JSON(w, http.StatusOK, nil)
 }

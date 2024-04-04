@@ -13,6 +13,7 @@ import (
 	"github.com/ahr-i/triton-agent/src/httpController"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
 	"github.com/ahr-i/triton-agent/tritonCommunicator"
+	"github.com/ahr-i/triton-agent/tritonController"
 	"github.com/gorilla/mux"
 )
 
@@ -38,12 +39,12 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	}
 	printModelInfo(provider, model, version, string(body))
 
-	// // Set model repository
-	// if err := tritonController.ChangeModelRepository(provider, model, version); err != nil {
-	// 	logCtrlr.Error(err)
-	// 	rend.JSON(w, http.StatusBadRequest, nil)
-	// 	return
-	// }
+	// Set model repository
+	if err := tritonController.ChangeModelRepository(provider, model, version); err != nil {
+		logCtrlr.Error(err)
+		rend.JSON(w, http.StatusBadRequest, nil)
+		return
+	}
 
 	// Request to tritons
 	startTime := time.Now()
