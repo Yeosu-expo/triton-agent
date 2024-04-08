@@ -2,11 +2,20 @@ package tritonController
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/ahr-i/triton-agent/modelStoreCommunicator"
 	"github.com/ahr-i/triton-agent/setting"
 )
+
+type requestData struct {
+	Provider  string `json:"id"`
+	ModelName string `json:"model_name"`
+	Version   string `json:"version"`
+	Address   string `json:"addr"`
+}
 
 func SetModel(body []byte) error {
 	// torrent로 요청 전달
@@ -15,6 +24,23 @@ func SetModel(body []byte) error {
 	if err != nil {
 		return err
 	}
+
+	var request requestData
+	if err := json.Unmarshal(body, &request); err != nil {
+		return err
+	}
+
+	err = modelStoreCommunicator.GetScript(request.Provider, request.ModelName, request.Version)
+	if err != nil {
+		return err
+	}
+
+	//triton server의 ssh로 접속, script 파일 실행
+	err = RunScriptOnTritonServer(request.Provider, request.ModelName, request.Version)
+	if err != nil {
+		return err
+	}
+
 	return nil
 	// filePath := fmt.Sprintf("%s/%s", setting.ModelsPath, provider)
 	// fileName := fmt.Sprintf("%s@%s<%s>.torrent", provider, model, version)

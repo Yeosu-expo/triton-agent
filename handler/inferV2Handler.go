@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"io"
 	"log"
 	"math/rand"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/ahr-i/triton-agent/schedulerCommunicator/callback"
+	"github.com/ahr-i/triton-agent/schedulerCommunicator/healthPinger"
 	"github.com/ahr-i/triton-agent/src/httpController"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
 	"github.com/ahr-i/triton-agent/tritonCommunicator"
@@ -26,7 +28,7 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	model := vars["model"]
 	version := vars["version"]
 
-	//healthPinger.UpdateTaskInfo_start(provider, model, version)
+	healthPinger.UpdateTaskInfo_start(provider, model, version)
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -39,14 +41,22 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	}
 	printModelInfo(provider, model, version, string(body))
 
+	// Check triton ready
+	ready, err := tritonCommunicator.Ready(model, version)
+	if err != nil {
+		logCtrlr.Error(errors.New("triton server is not working"))
+	}
 	// Set model repository
-	if err := tritonController.ChangeModelRepository(provider, model, version); err != nil {
-		logCtrlr.Error(err)
-		rend.JSON(w, http.StatusBadRequest, nil)
-		return
+	if !ready {
+		if err := tritonController.ChangeModelRepository(provider, model, version); err != nil {
+			logCtrlr.Error(err)
+			rend.JSON(w, http.StatusBadRequest, nil)
+			return
+		}
 	}
 
 	// Request to tritons
+	log.Println("Inference 요청 보내기!!!!")
 	startTime := time.Now()
 	response, err := tritonCommunicator.Inference(model, version, body)
 	if err != nil {
@@ -60,7 +70,7 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	burstTime := float64(endTime.Sub(startTime).Milliseconds()) / 1000
 	log.Printf("* (SYSTEM) Burst time: %f\n", burstTime)
 	callback.Callback(burstTime, provider, model, version)
-	//healthPinger.UpdateTaskInfo_end(provider, model, version)
+	healthPinger.UpdateTaskInfo_end(provider, model, version)
 
 	httpController.JSON(w, http.StatusOK, response)
 	//httpController.JSON(w, http.StatusOK, nil)

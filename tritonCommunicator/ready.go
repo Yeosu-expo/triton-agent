@@ -2,6 +2,7 @@ package tritonCommunicator
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/ahr-i/triton-agent/setting"
@@ -16,6 +17,13 @@ func Ready(model string, version string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	fmt.Println("triton GET ready:", string(body))
 
 	if resp.StatusCode == http.StatusOK {
 		return true, nil

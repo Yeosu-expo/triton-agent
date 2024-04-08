@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/ahr-i/triton-agent/setting"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
@@ -31,6 +32,33 @@ func (pr *ProgressReader) Read(p []byte) (int, error) {
 	log.Printf("Downloaded %.2f MB\n", float64(pr.totalRead)/1024/1024)
 
 	return n, err
+}
+
+func GetScript(provider string, model string, version string) error {
+	log.Println("Starting script download.")
+	url := fmt.Sprintf("http://%s/getScript?id=%s&model=%s&version=%s", setting.ModelStoreUrl, provider, model, version)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	fileName := fmt.Sprintf("%s@%s#%s", provider, model, version)
+	scriptPath := fmt.Sprintf("%s/%s/%s.sh", setting.ModelsPath, provider, fileName)
+	outFile, err := os.Create(scriptPath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	log.Println("Download completed. Script File Path :", scriptPath)
+	return nil
 }
 
 /* downloading the model from the Model Store. */
