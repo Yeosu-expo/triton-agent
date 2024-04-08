@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ahr-i/triton-agent/schedulerCommunicator/callback"
 	"github.com/ahr-i/triton-agent/schedulerCommunicator/healthPinger"
 	"github.com/ahr-i/triton-agent/src/httpController"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
@@ -28,7 +27,12 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	model := vars["model"]
 	version := vars["version"]
 
+	var burstTime float64
 	healthPinger.UpdateTaskInfo_start(provider, model, version)
+	defer func() {
+		//callback.Callback(burstTime, provider, model, version)
+		healthPinger.UpdateTaskInfo_end(provider, model, version, burstTime)
+	}()
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -66,11 +70,11 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 	}
 	endTime := time.Now()
 
+	log.Println(string(response))
+
 	// Send burst time to scheduler
-	burstTime := float64(endTime.Sub(startTime).Milliseconds()) / 1000
+	burstTime = float64(endTime.Sub(startTime).Milliseconds()) / 1000
 	log.Printf("* (SYSTEM) Burst time: %f\n", burstTime)
-	callback.Callback(burstTime, provider, model, version)
-	healthPinger.UpdateTaskInfo_end(provider, model, version)
 
 	httpController.JSON(w, http.StatusOK, response)
 	//httpController.JSON(w, http.StatusOK, nil)
@@ -91,8 +95,33 @@ func (h *Handler) testInferV2Handler(w http.ResponseWriter, r *http.Request) {
 	model := vars["model"]
 	version := vars["version"]
 
+	log.Println("provider :", provider)
+	log.Println("model :", model)
+	log.Println("version :", version)
+
+	var burstTime float64
+	healthPinger.UpdateTaskInfo_start(provider, model, version)
+	defer func() {
+		//callback.Callback(burstTime, provider, model, version)
+		healthPinger.UpdateTaskInfo_end(provider, model, version, burstTime)
+	}()
+
 	mutex.Lock()
 	defer mutex.Unlock()
+
+	// Check triton ready
+	ready, err := tritonCommunicator.Ready(model, version)
+	if err != nil {
+		logCtrlr.Error(errors.New("triton server is not working"))
+	}
+	// Set model repository
+	if !ready {
+		if err := tritonController.ChangeModelRepository(provider, model, version); err != nil {
+			logCtrlr.Error(err)
+			rend.JSON(w, http.StatusBadRequest, nil)
+			return
+		}
+	}
 
 	//요청받으면 랜덤한 인퍼런스 타임으로 결과값 돌려주기.
 	inferTime := getRandNum(500, 10000)
@@ -101,12 +130,13 @@ func (h *Handler) testInferV2Handler(w http.ResponseWriter, r *http.Request) {
 	//랜덤한 확률로 인퍼런스 중 fault상황
 	randRate := rand.Float64()
 	if randRate < 0.1 {
+		log.Println("fault 상황, 종료")
 		os.Exit(1)
 	}
 
 	//정상 수행 후 응답 상황
-	burstTime := float64(inferTime) / 1000
-	callback.Callback(burstTime, provider, model, version)
+	burstTime = float64(inferTime) / 1000
+	httpController.JSON(w, http.StatusOK, nil)
 }
 
 func getRandNum(min int, max int) int {

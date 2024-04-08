@@ -3,7 +3,7 @@ package tritonCommunicator
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/ahr-i/triton-agent/setting"
@@ -23,7 +23,7 @@ func Inference(model string, version string, request []byte) ([]byte, error) {
 	defer resp.Body.Close()
 
 	// Read body
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

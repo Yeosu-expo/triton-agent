@@ -47,7 +47,7 @@ func main() {
 
 	logs()
 
-	go test()
+	//go test()
 
 	startServer()
 }

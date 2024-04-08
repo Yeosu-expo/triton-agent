@@ -34,7 +34,6 @@ func Enter() {
 
 	gpuName = strings.TrimSpace(string(output))
 
-	gpuName = "2080"
 	log.Println("GPU NAME :", gpuName)
 
 	alivePoster()

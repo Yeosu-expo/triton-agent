@@ -3,6 +3,7 @@ package healthPinger
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -39,14 +40,51 @@ func UpdateTaskInfo_start(provider string, model string, version string) {
 		AverageInferenceTime: prevTaskInfo.AverageInferenceTime,
 		LoadedAmount:         prevTaskInfo.LoadedAmount + 1,
 	}
+
+	request := requestData{
+		Port:    setting.ServerPort,
+		Id:      provider,
+		Model:   model,
+		Version: version,
+	}
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	url := fmt.Sprintf("http://%s/%s", setting.ManagerUrl, "inference/start")
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err)
+	}
 }
-func UpdateTaskInfo_end(provider string, model string, version string) {
+func UpdateTaskInfo_end(provider string, model string, version string, burstTime float64) {
+	UpdateTaskInfo_burstTime(burstTime, provider, model, version)
+
 	prevTaskInfo := model_info[provider+"@"+model][version]
 
 	model_info[provider+"@"+model][version] = TaskInfo{
 		AverageInferenceTime: prevTaskInfo.AverageInferenceTime,
 		LoadedAmount:         prevTaskInfo.LoadedAmount - 1,
 	}
+
+	request := requestData{
+		Port:    setting.ServerPort,
+		Id:      provider,
+		Model:   model,
+		Version: version,
+	}
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		log.Println(err)
+	}
+
+	url := fmt.Sprintf("http://%s/%s", setting.ManagerUrl, "inference/end")
+	_, err = http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println(err)
+	}
+
 }
 
 type requestData struct {
