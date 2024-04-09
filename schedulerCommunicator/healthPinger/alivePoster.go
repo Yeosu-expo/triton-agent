@@ -28,7 +28,7 @@ func postAlive() {
 
 	resp, _ := http.Post("http://"+setting.ManagerUrl+"/alive", "application/json", bytes.NewBuffer(jsonData))
 	if resp == nil || resp.StatusCode != http.StatusOK {
-		logCtrlr.Error(errors.New("there is no scheduler"))
+		logCtrlr.Error(errors.New("there is no manager"))
 
 		//os.Exit(1)
 	}
