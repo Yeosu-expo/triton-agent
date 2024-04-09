@@ -2,15 +2,18 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/ahr-i/triton-agent/schedulerCommunicator/healthPinger"
+	"github.com/ahr-i/triton-agent/setting"
 	"github.com/ahr-i/triton-agent/src/httpController"
 	"github.com/ahr-i/triton-agent/src/logCtrlr"
 	"github.com/ahr-i/triton-agent/tritonCommunicator"
@@ -86,7 +89,35 @@ func printModelInfo(provider string, model string, version string, request strin
 	log.Println("Provider:", provider)
 	log.Println("Model:", model)
 	log.Println("Version:", version)
-	log.Println("Request:", request)
+	//log.Println("Request:", request)
+
+	atSplit := strings.Split(setting.LoadedModel, "@")
+	if len(atSplit) != 2 {
+		fmt.Println("Error: Input does not contain a valid '@' separator")
+		return
+	}
+	Lprovider := atSplit[0]
+
+	// '#' 기호를 기준으로 두 번째 분할
+	hashSplit := strings.Split(atSplit[1], "#")
+	if len(hashSplit) != 2 {
+		fmt.Println("Error: Input does not contain a valid '#' separator")
+		return
+	}
+	Lmodel := hashSplit[0]
+	Lversion := hashSplit[1]
+
+	logCtrlr.Log("Loaded Model: ▽▽▽▽▽▽▽▽▽▽")
+	log.Println("Provider:", Lprovider)
+	log.Println("Model:", Lmodel)
+	log.Println("Version:", Lversion)
+
+	logCtrlr.Log("Not Load Model: ▽▽▽▽▽▽▽▽▽▽")
+	for modelkey, value := range healthPinger.Model_info {
+		for version, _ := range value {
+			log.Printf("%s#%s\n", modelkey, version)
+		}
+	}
 }
 
 func (h *Handler) testInferV2Handler(w http.ResponseWriter, r *http.Request) {

@@ -20,7 +20,7 @@ func postAlive() {
 	jsonData, err := json.Marshal(RequestData{
 		Port:       port,
 		Gpuname:    gpuName,
-		Model_info: model_info,
+		Model_info: Model_info,
 	})
 	if err != nil {
 		panic(err)

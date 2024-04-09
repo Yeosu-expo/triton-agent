@@ -24,3 +24,5 @@ const ManagerActive bool = true
 const ManagerUrl string = "210.125.31.176:80"
 
 const TorrentUrl string = "triton-torrent:7001"
+
+var LoadedModel string = ""

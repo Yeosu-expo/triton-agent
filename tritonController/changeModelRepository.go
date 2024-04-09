@@ -46,7 +46,7 @@ func ChangeModelRepository(provider string, model string, version string) error 
 	if err := polling(model, version); err != nil {
 		return err
 	}
-
+	setting.LoadedModel = fmt.Sprintf("%s@%s#%s", provider, model, version)
 	return nil
 }
 
@@ -160,6 +160,6 @@ func polling(model string, version string) error {
 		}
 	}
 
-	log.Println("***********************Triton Server Started")
+	logCtrlr.Log("Triton Server Started")
 	return nil
 }

@@ -11,11 +11,11 @@ import (
 )
 
 func UpdateTaskInfo_burstTime(burstTime float64, provider string, model string, version string) {
-	if _, exists := model_info[provider+"@"+model]; !exists {
-		model_info[provider+"@"+model] = make(map[string]TaskInfo)
+	if _, exists := Model_info[provider+"@"+model]; !exists {
+		Model_info[provider+"@"+model] = make(map[string]TaskInfo)
 	}
 
-	prevTaskInfo := model_info[provider+"@"+model][version]
+	prevTaskInfo := Model_info[provider+"@"+model][version]
 	var nextTaskInfo TaskInfo
 
 	if prevTaskInfo.AverageInferenceTime == 0 {
@@ -30,13 +30,13 @@ func UpdateTaskInfo_burstTime(burstTime float64, provider string, model string, 
 		}
 	}
 
-	model_info[provider+"@"+model][version] = nextTaskInfo
+	Model_info[provider+"@"+model][version] = nextTaskInfo
 }
 
 func UpdateTaskInfo_start(provider string, model string, version string) {
-	prevTaskInfo := model_info[provider+"@"+model][version]
+	prevTaskInfo := Model_info[provider+"@"+model][version]
 
-	model_info[provider+"@"+model][version] = TaskInfo{
+	Model_info[provider+"@"+model][version] = TaskInfo{
 		AverageInferenceTime: prevTaskInfo.AverageInferenceTime,
 		LoadedAmount:         prevTaskInfo.LoadedAmount + 1,
 	}
@@ -61,9 +61,9 @@ func UpdateTaskInfo_start(provider string, model string, version string) {
 func UpdateTaskInfo_end(provider string, model string, version string, burstTime float64) {
 	UpdateTaskInfo_burstTime(burstTime, provider, model, version)
 
-	prevTaskInfo := model_info[provider+"@"+model][version]
+	prevTaskInfo := Model_info[provider+"@"+model][version]
 
-	model_info[provider+"@"+model][version] = TaskInfo{
+	Model_info[provider+"@"+model][version] = TaskInfo{
 		AverageInferenceTime: prevTaskInfo.AverageInferenceTime,
 		LoadedAmount:         prevTaskInfo.LoadedAmount - 1,
 	}
@@ -96,11 +96,11 @@ type requestData struct {
 
 func UpdateModel(provider string, model string, version string) {
 	modelkey := provider + "@" + model
-	if _, exists := model_info[modelkey]; !exists {
-		model_info[modelkey] = make(map[string]TaskInfo)
+	if _, exists := Model_info[modelkey]; !exists {
+		Model_info[modelkey] = make(map[string]TaskInfo)
 	}
 
-	model_info[modelkey][version] = TaskInfo{AverageInferenceTime: 0, LoadedAmount: 0}
+	Model_info[modelkey][version] = TaskInfo{AverageInferenceTime: 0, LoadedAmount: 0}
 
 	request := requestData{
 		Port:    setting.ServerPort,

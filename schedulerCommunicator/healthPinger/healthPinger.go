@@ -14,7 +14,7 @@ var port string
 var gpuName string
 
 // var model_info map[string]map[string]TaskInfo = make(map[string]map[string]TaskInfo)
-var model_info map[string]map[string]TaskInfo
+var Model_info map[string]map[string]TaskInfo
 
 type TaskInfo struct {
 	LoadedAmount         int     `json:"loaded_amount"`
@@ -22,7 +22,7 @@ type TaskInfo struct {
 }
 
 func Enter() {
-	model_info = make(map[string]map[string]TaskInfo)
+	Model_info = make(map[string]map[string]TaskInfo)
 
 	port = setting.ServerPort
 
