@@ -50,21 +50,21 @@ func alivePoster() {
 
 	go func() {
 		log.Println("승인 중")
-		_, err := ln.Accept()
+		conn, err := ln.Accept()
 		if err != nil {
 			log.Fatal("Acppea", err)
 		}
 
-		log.Println("헬스체킹용 tcp 연결 성공")
-
+		log.Println("헬스체킹용 tcp 연결 성공", conn.RemoteAddr().String())
+		select {}
 	}()
 
 	for {
 		cnt++
-		log.Printf("* (System) Send information to the Manager. (It is the %dth request)\n", cnt)
+		//log.Printf("* (System) Send information to the Manager. (It is the %dth request)\n", cnt)
 
 		postAlive()
 
-		time.Sleep(8 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }

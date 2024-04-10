@@ -62,7 +62,7 @@ func test() {
 	}
 
 	testModels := []testModel{
-		{"meta", "Llama-2-7B-Chat", "1"},
+		{"Prov", "whisper", "1"},
 	}
 
 	for _, model := range testModels {

@@ -86,10 +86,10 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 
 func printModelInfo(provider string, model string, version string, request string) {
 	logCtrlr.Log("Request: ▽▽▽▽▽▽▽▽▽▽")
-	log.Println("Provider:", provider)
-	log.Println("Model:", model)
-	log.Println("Version:", version)
-	//log.Println("Request:", request)
+	log.Printf("%28s: %s", "Provider", provider)
+	log.Printf("%28s: %s", "Model:", model)
+	log.Printf("%28s: %s", "Version:", version)
+	//log.Printf("%28s : %s", "Request:", request)
 
 	atSplit := strings.Split(setting.LoadedModel, "@")
 	if len(atSplit) != 2 {
@@ -108,14 +108,16 @@ func printModelInfo(provider string, model string, version string, request strin
 	Lversion := hashSplit[1]
 
 	logCtrlr.Log("Loaded Model: ▽▽▽▽▽▽▽▽▽▽")
-	log.Println("Provider:", Lprovider)
-	log.Println("Model:", Lmodel)
-	log.Println("Version:", Lversion)
+	log.Printf("%32s: %s", "Provider", Lprovider)
+	log.Printf("%32s: %s", "Model:", Lmodel)
+	log.Printf("%32s: %s", "Version:", Lversion)
 
 	logCtrlr.Log("Not Load Model: ▽▽▽▽▽▽▽▽▽▽")
+	notLoadedCnt := 1
 	for modelkey, value := range healthPinger.Model_info {
-		for version, _ := range value {
-			log.Printf("%s#%s\n", modelkey, version)
+		for version := range value {
+			log.Printf("%35d: %s#%s\n", notLoadedCnt, modelkey, version)
+			notLoadedCnt++
 		}
 	}
 }
