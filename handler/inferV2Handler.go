@@ -86,37 +86,39 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 
 func printModelInfo(provider string, model string, version string, request string) {
 	logCtrlr.Log("Request: ▽▽▽▽▽▽▽▽▽▽")
-	log.Printf("%28s: %s", "Provider", provider)
-	log.Printf("%28s: %s", "Model:", model)
-	log.Printf("%28s: %s", "Version:", version)
+	log.Printf("%19s: %s", "Provider", provider)
+	log.Printf("%19s: %s", "Model:", model)
+	log.Printf("%19s: %s", "Version:", version)
 	//log.Printf("%28s : %s", "Request:", request)
 
-	atSplit := strings.Split(setting.LoadedModel, "@")
-	if len(atSplit) != 2 {
-		fmt.Println("Error: Input does not contain a valid '@' separator")
-		return
-	}
-	Lprovider := atSplit[0]
+	if setting.LoadedModel != "" {
+		atSplit := strings.Split(setting.LoadedModel, "@")
+		if len(atSplit) != 2 {
+			fmt.Println("Error: Input does not contain a valid '@' separator")
+			return
+		}
+		Lprovider := atSplit[0]
 
-	// '#' 기호를 기준으로 두 번째 분할
-	hashSplit := strings.Split(atSplit[1], "#")
-	if len(hashSplit) != 2 {
-		fmt.Println("Error: Input does not contain a valid '#' separator")
-		return
-	}
-	Lmodel := hashSplit[0]
-	Lversion := hashSplit[1]
+		// '#' 기호를 기준으로 두 번째 분할
+		hashSplit := strings.Split(atSplit[1], "#")
+		if len(hashSplit) != 2 {
+			fmt.Println("Error: Input does not contain a valid '#' separator")
+			return
+		}
+		Lmodel := hashSplit[0]
+		Lversion := hashSplit[1]
 
-	logCtrlr.Log("Loaded Model: ▽▽▽▽▽▽▽▽▽▽")
-	log.Printf("%32s: %s", "Provider", Lprovider)
-	log.Printf("%32s: %s", "Model:", Lmodel)
-	log.Printf("%32s: %s", "Version:", Lversion)
+		logCtrlr.Log("Loaded Model: ▽▽▽▽▽▽▽▽▽▽")
+		log.Printf("%23s: %s", "Provider", Lprovider)
+		log.Printf("%23s: %s", "Model:", Lmodel)
+		log.Printf("%23s: %s", "Version:", Lversion)
+	}
 
 	logCtrlr.Log("Not Load Model: ▽▽▽▽▽▽▽▽▽▽")
 	notLoadedCnt := 1
 	for modelkey, value := range healthPinger.Model_info {
 		for version := range value {
-			log.Printf("%35d: %s#%s\n", notLoadedCnt, modelkey, version)
+			log.Printf("%26d: %s#%s\n", notLoadedCnt, modelkey, version)
 			notLoadedCnt++
 		}
 	}
