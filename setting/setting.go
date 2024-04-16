@@ -23,6 +23,6 @@ var ModelStoreUrl string = "localhost:8700" // Edit this
 const ManagerActive bool = true
 const ManagerUrl string = "210.125.31.176:80"
 
-const TorrentUrl string = "triton-torrent:7001"
+const TorrentUrl string = "host.docker.internal:7001"
 
 var LoadedModel string = ""
