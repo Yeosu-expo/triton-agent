@@ -45,7 +45,11 @@ func (h *Handler) servingHandler(w http.ResponseWriter, r *http.Request) {
 
 	setting.ModelStoreUrl = response.Address
 
-	tritonController.SetModel(body)
+	err = tritonController.SetModel(body)
+	if err != nil {
+		log.Println("<SetModel Error>", err)
+		rend.JSON(w, http.StatusBadRequest, nil)
+	}
 
 	healthPinger.UpdateModel(response.Provider, response.ModelName, response.Version)
 

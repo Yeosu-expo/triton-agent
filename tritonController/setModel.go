@@ -20,9 +20,13 @@ type requestData struct {
 func SetModel(body []byte) error {
 	// torrent로 요청 전달
 	url := fmt.Sprintf("http://%s/serving", setting.TorrentUrl)
-	_, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("<torrent container> Post error, StatusCode : %d", resp.StatusCode)
 	}
 
 	var request requestData

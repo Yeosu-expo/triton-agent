@@ -22,6 +22,8 @@ func initialization() {
 		logCtrlr.Log("Use manager.")
 		go healthPinger.Enter()
 	}
+
+	//setting.TorrentUrl = os.Getenv("torrentAddr")
 }
 
 func startServer() {
