@@ -3,6 +3,7 @@ package healthPinger
 import (
 	"log"
 	"net"
+	"net/http"
 	"os/exec"
 	"strings"
 	"time"
@@ -59,11 +60,20 @@ func alivePoster() {
 		select {}
 	}()
 
+	transport := &http.Transport{
+		MaxIdleConns:        2,
+		MaxIdleConnsPerHost: 2,
+		DisableKeepAlives:   false,
+	}
+	client := &http.Client{
+		Transport: transport,
+	}
+
 	for {
 		cnt++
-		//log.Printf("* (System) Send information to the Manager. (It is the %dth request)\n", cnt)
+		log.Printf("* (System) Send information to the Manager. (It is the %dth request)\n", cnt)
 
-		postAlive()
+		postAlive(client)
 
 		time.Sleep(1 * time.Second)
 	}

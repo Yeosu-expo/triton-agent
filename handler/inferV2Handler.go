@@ -81,7 +81,6 @@ func (h *Handler) inferV2Handler(w http.ResponseWriter, r *http.Request) {
 
 	httpController.JSON(w, http.StatusOK, response)
 	//httpController.JSON(w, http.StatusOK, nil)
-
 }
 
 func printModelInfo(provider string, model string, version string, request string) {

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/ahr-i/triton-agent/setting"
@@ -16,7 +18,7 @@ type RequestData struct {
 	Model_info map[string]map[string]TaskInfo `json:"model_info"`
 }
 
-func postAlive() {
+func postAlive(client *http.Client) {
 	jsonData, err := json.Marshal(RequestData{
 		Port:       port,
 		Gpuname:    gpuName,
@@ -26,8 +28,20 @@ func postAlive() {
 		panic(err)
 	}
 
-	resp, _ := http.Post("http://"+setting.ManagerUrl+"/alive", "application/json", bytes.NewBuffer(jsonData))
-	if resp == nil || resp.StatusCode != http.StatusOK {
+	url := fmt.Sprintf("http://%s/alive", setting.ManagerUrl)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Println("<NewRequest>", err)
+	}
+
+	req.Header.Set("Connection", "keep-alive")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("<client.Do>", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
 		logCtrlr.Error(errors.New("there is no manager"))
 
 		//os.Exit(1)
